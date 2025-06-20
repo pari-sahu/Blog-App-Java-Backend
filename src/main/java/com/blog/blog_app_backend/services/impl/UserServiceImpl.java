@@ -1,12 +1,16 @@
 package com.blog.blog_app_backend.services.impl;
 
+import com.blog.blog_app_backend.config.AppConstants;
+import com.blog.blog_app_backend.entities.Role;
 import com.blog.blog_app_backend.entities.User;
 import com.blog.blog_app_backend.exceptions.ResourceNotFoundException;
 import com.blog.blog_app_backend.payloads.UserDto;
+import com.blog.blog_app_backend.repositories.RoleRepo;
 import com.blog.blog_app_backend.repositories.UserRepo;
 import com.blog.blog_app_backend.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,8 +21,16 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepo userRepo;
+
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepo roleRepo;
+
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = this.dtoToUser(userDto);
@@ -71,23 +83,35 @@ public class UserServiceImpl implements UserService {
     public User dtoToUser(UserDto userDto) {
         User user = this.modelMapper.map(userDto, User.class);
 
-//        user.setId(userDto.getId());
-//        user.setName(userDto.getName());
-//        user.setEmail(userDto.getEmail());
-//        user.setAbout(userDto.getAbout());
-//        user.setPassword(userDto.getPassword());
+        // user.setId(userDto.getId());
+        // user.setName(userDto.getName());
+        // user.setEmail(userDto.getEmail());
+        // user.setAbout(userDto.getAbout());
+        // user.setPassword(userDto.getPassword());
         return user;
     }
 
     public UserDto userToDto(User user) {
         UserDto userDto = this.modelMapper.map(user, UserDto.class);
-
-//        userDto.setId(user.getId());
-//        userDto.setName(user.getName());
-//        userDto.setEmail(user.getEmail());
-//        userDto.setAbout(user.getAbout());
-//        userDto.setPassword(user.getPassword());
         return userDto;
+    }
+
+    @Override
+    public UserDto registerNewUser(UserDto userDto) {
+
+        User user = this.modelMapper.map(userDto, User.class);
+
+        // encoded the password
+        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+
+        // roles
+        Role role = this.roleRepo.findById(AppConstants.NORMAL_USER).get();
+
+        user.getRoles().add(role);
+
+        User newUser = this.userRepo.save(user);
+
+        return this.modelMapper.map(newUser, UserDto.class);
     }
 
 }

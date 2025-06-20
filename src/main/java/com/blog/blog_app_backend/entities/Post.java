@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.xml.stream.events.Comment;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
